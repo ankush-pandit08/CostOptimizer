@@ -1,0 +1,2226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Cost Optimizer</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/home.css">
+    <link rel="stylesheet" href="/css/footer.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        *{
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+        }
+        body {
+            background: var(--bg);
+        }
+        .dashboard-layout {
+            display: flex;
+            min-height: 100vh;
+        }
+        .dashboard-sidebar {
+            background: linear-gradient(135deg, #0B1B34, #0E2447);
+            color: #fff;
+            width: 260px;
+            min-width: 220px;
+            padding: 40px 0 0 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: 2px 0 12px rgba(0,105,255,0.08);
+        }
+        .dashboard-sidebar .user-info {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+        .dashboard-sidebar .user-avatar {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 12px;
+            font-size: 2.2rem;
+            color: #0069ff;
+        }
+        .dashboard-sidebar .user-name {
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 4px;
+        }
+        .dashboard-sidebar .user-email {
+            font-size: 0.95rem;
+            color: #eaf6fb;
+        }
+        .dashboard-tabs {
+            width: 100%;
+            margin-top: 24px;
+        }
+        .dashboard-tabs a {
+            display: block;
+            padding: 14px 32px;
+            color: #fff;
+            font-weight: 500;
+            text-decoration: none;
+            border-left: 4px solid transparent;
+            transition: background 0.2s, border-color 0.2s;
+            margin-bottom: 4px;
+            letter-spacing: 0.5px;
+        }
+        .dashboard-tabs a.active,
+        .dashboard-tabs a:hover {
+            background: rgba(255,255,255,0.08);
+            border-left: 4px solid #fff;
+        }
+        .dashboard-main {
+            flex: 1;
+            padding: 48px 32px 32px 32px;
+            background: var(--bg);
+            min-width: 0;
+        }
+        .dashboard-sections {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 32px;
+        }
+        .dashboard-card {
+            background: var(--white);
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            padding: 32px;
+            margin-bottom: 32px;
+        }
+        .dashboard-card h3 {
+            color: var(--primary);
+            margin-bottom: 16px;
+        }
+        .aws-costs-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .aws-costs-list li {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #e5e7eb;
+            font-size: 1.08rem;
+        }
+        .aws-costs-list li:last-child {
+            border-bottom: none;
+        }
+        @media (max-width: 900px) {
+            .dashboard-sections {
+                grid-template-columns: 1fr;
+                gap: 24px;
+            }
+            .dashboard-sidebar {
+                width: 100%;
+                min-width: 0;
+                flex-direction: row;
+                justify-content: flex-start;
+                padding: 24px 0;
+            }
+            .dashboard-tabs {
+                margin-top: 0;
+            }
+        }
+                 /* Dashboard Sections */
+         .dashboard-section {
+             display: none;
+         }
+         .dashboard-section.active {
+             display: block;
+         }
+         
+         .section-header {
+             display: flex;
+             justify-content: space-between;
+             align-items: center;
+             margin-bottom: 24px;
+         }
+         
+         .section-header h2 {
+             color: var(--primary);
+             margin: 0;
+         }
+         
+         /* Overview Stats */
+         .overview-stats {
+             display: grid;
+             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+             gap: 20px;
+             margin-bottom: 32px;
+         }
+         
+         .stat-card {
+             background: var(--white);
+             border-radius: 12px;
+             padding: 24px;
+             box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+             display: flex;
+             align-items: center;
+             gap: 16px;
+         }
+         
+         .stat-icon {
+             width: 48px;
+             height: 48px;
+             border-radius: 12px;
+             background: linear-gradient(135deg, #0069ff, #0056cc);
+             display: flex;
+             align-items: center;
+             justify-content: center;
+             color: white;
+             font-size: 1.5rem;
+         }
+         
+         .stat-content h3 {
+             margin: 0 0 4px 0;
+             font-size: 0.9rem;
+             color: #666;
+             font-weight: 500;
+         }
+         
+         .stat-content p {
+             margin: 0 0 4px 0;
+             font-size: 1.5rem;
+             font-weight: 600;
+             color: var(--primary);
+         }
+         
+         .stat-content small {
+             color: #666;
+             font-size: 0.8rem;
+         }
+         
+         /* Tables */
+         .table-container {
+             background: var(--white);
+             border-radius: 12px;
+             box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+             overflow: hidden;
+         }
+         
+         .data-table {
+             width: 100%;
+             border-collapse: collapse;
+         }
+         
+         .data-table th {
+             background: #f8f9fa;
+             padding: 16px;
+             text-align: left;
+             font-weight: 600;
+             color: #333;
+             border-bottom: 1px solid #e9ecef;
+         }
+         
+         .data-table td {
+             padding: 16px;
+             border-bottom: 1px solid #e9ecef;
+             color: #333;
+         }
+         
+         .data-table tr:hover {
+             background: #f8f9fa;
+         }
+         
+         .loading-text {
+             text-align: center;
+             color: #666;
+             font-style: italic;
+         }
+         
+         /* Loading and Error States */
+         .loading-state, .error-state {
+             display: flex;
+             flex-direction: column;
+             align-items: center;
+             justify-content: center;
+             min-height: 400px;
+             text-align: center;
+         }
+         
+         .spinner {
+             width: 40px;
+             height: 40px;
+             border: 4px solid #f3f3f3;
+             border-top: 4px solid #0069ff;
+             border-radius: 50%;
+             animation: spin 1s linear infinite;
+             margin-bottom: 16px;
+         }
+         
+         @keyframes spin {
+             0% { transform: rotate(0deg); }
+             100% { transform: rotate(360deg); }
+         }
+         
+         .error-content i {
+             font-size: 3rem;
+             color: #dc3545;
+             margin-bottom: 16px;
+         }
+         
+         .error-content h3 {
+             color: #dc3545;
+             margin-bottom: 8px;
+         }
+         
+         .error-content p {
+             color: #666;
+             margin-bottom: 24px;
+         }
+         
+         /* Costs Section */
+         .costs-container {
+             display: grid;
+             grid-template-columns: 2fr 1fr;
+             gap: 24px;
+         }
+         
+         .cost-chart {
+             background: var(--white);
+             border-radius: 12px;
+             padding: 24px;
+             box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+         }
+         
+         .cost-breakdown {
+             background: var(--white);
+             border-radius: 12px;
+             padding: 24px;
+             box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+         }
+         
+         .cost-breakdown h3 {
+             margin-bottom: 16px;
+             color: var(--primary);
+         }
+         
+         .cost-item {
+             display: flex;
+             justify-content: space-between;
+             padding: 8px 0;
+             border-bottom: 1px solid #e9ecef;
+         }
+         
+         .cost-item:last-child {
+             border-bottom: none;
+         }
+         
+         /* Status Badges */
+         .status-badge {
+             padding: 4px 8px;
+             border-radius: 12px;
+             font-size: 0.8rem;
+             font-weight: 500;
+             text-transform: capitalize;
+         }
+         
+         .status-running, .status-available, .status-enabled {
+             background: #d4edda;
+             color: #155724;
+         }
+         
+         .status-stopped, .status-stopping, .status-disabled {
+             background: #f8d7da;
+             color: #721c24;
+         }
+         
+         .status-pending {
+             background: #fff3cd;
+             color: #856404;
+         }
+         
+         /* Profile Card */
+         .profile-card {
+             background: var(--white);
+             border-radius: 12px;
+             padding: 24px;
+             box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+         }
+         
+         .profile-card h3 {
+             color: var(--primary);
+             margin-bottom: 16px;
+         }
+         
+         .profile-card p {
+             margin-bottom: 8px;
+             color: #333;
+         }
+         
+         /* Cost Savings Styles */
+         .savings-overview {
+             margin-bottom: 32px;
+         }
+         
+         .savings-summary {
+             display: grid;
+             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+             gap: 20px;
+             margin-bottom: 24px;
+         }
+         
+         .savings-card {
+             background: var(--white);
+             border-radius: 12px;
+             padding: 24px;
+             box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+             display: flex;
+             align-items: center;
+             gap: 16px;
+             border-left: 4px solid #28a745;
+         }
+         
+         .savings-icon {
+             width: 48px;
+             height: 48px;
+             border-radius: 12px;
+             background: linear-gradient(135deg, #28a745, #20c997);
+             display: flex;
+             align-items: center;
+             justify-content: center;
+             color: white;
+             font-size: 1.5rem;
+         }
+         
+         .savings-content h3 {
+             margin: 0 0 4px 0;
+             font-size: 0.9rem;
+             color: #666;
+             font-weight: 500;
+         }
+         
+         .savings-content p {
+             margin: 0 0 4px 0;
+             font-size: 1.5rem;
+             font-weight: 600;
+             color: #28a745;
+         }
+         
+         .savings-content small {
+             color: #666;
+             font-size: 0.8rem;
+         }
+         
+         .recommendations-container {
+             display: grid;
+             gap: 24px;
+         }
+         
+         .recommendation-section {
+             background: var(--white);
+             border-radius: 12px;
+             box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+             overflow: hidden;
+         }
+         
+         .recommendation-section .section-header {
+             background: #f8f9fa;
+             padding: 16px 24px;
+             border-bottom: 1px solid #e9ecef;
+             margin-bottom: 0;
+         }
+         
+         .recommendation-section .section-header h3 {
+             margin: 0;
+             color: #333;
+             font-size: 1.1rem;
+             display: flex;
+             align-items: center;
+             gap: 8px;
+         }
+         
+         .recommendation-content {
+             padding: 24px;
+         }
+         
+         .priority-badge {
+             padding: 4px 12px;
+             border-radius: 20px;
+             font-size: 0.75rem;
+             font-weight: 600;
+             text-transform: uppercase;
+             letter-spacing: 0.5px;
+         }
+         
+         .priority-badge.high {
+             background: #f8d7da;
+             color: #721c24;
+         }
+         
+         .priority-badge.medium {
+             background: #fff3cd;
+             color: #856404;
+         }
+         
+         .priority-badge.low {
+             background: #d1ecf1;
+             color: #0c5460;
+         }
+         
+         .recommendation-item {
+             display: flex;
+             justify-content: space-between;
+             align-items: center;
+             padding: 16px 0;
+             border-bottom: 1px solid #e9ecef;
+         }
+         
+         .recommendation-item:last-child {
+             border-bottom: none;
+         }
+         
+         .recommendation-info {
+             flex: 1;
+         }
+         
+         .recommendation-title {
+             font-weight: 600;
+             color: #333;
+             margin-bottom: 4px;
+         }
+         
+         .recommendation-description {
+             color: #666;
+             font-size: 0.9rem;
+             margin-bottom: 8px;
+         }
+         
+         .recommendation-savings {
+             text-align: right;
+             margin-left: 16px;
+         }
+         
+         .savings-amount {
+             font-size: 1.2rem;
+             font-weight: 600;
+             color: #28a745;
+             margin-bottom: 4px;
+         }
+         
+         .savings-period {
+             font-size: 0.8rem;
+             color: #666;
+         }
+         
+         .action-button {
+             background: #007bff;
+             color: white;
+             border: none;
+             padding: 8px 16px;
+             border-radius: 6px;
+             font-size: 0.85rem;
+             cursor: pointer;
+             transition: background 0.2s;
+             margin-top: 8px;
+         }
+         
+         .action-button:hover {
+             background: #0056b3;
+         }
+         
+         .no-recommendations {
+             text-align: center;
+             color: #666;
+             font-style: italic;
+             padding: 32px;
+         }
+         
+         /* Footer Styles */
+         .footer {
+             background: linear-gradient(135deg, #0B1B34, #0E2447);
+             color: #fff;
+             margin-top: 60px;
+             padding: 0;
+         }
+         
+         .footer .container {
+             max-width: 1200px;
+             margin: 0 auto;
+             padding: 0 20px;
+         }
+         
+         .footer-content {
+             display: grid;
+             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+             gap: 40px;
+             padding: 60px 0 40px 0;
+             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+         }
+         
+         .footer-section h4 {
+             color: #fff;
+             font-size: 1.2rem;
+             font-weight: 600;
+             margin-bottom: 20px;
+             position: relative;
+         }
+         
+         .footer-section h4::after {
+             content: '';
+             position: absolute;
+             bottom: -8px;
+             left: 0;
+             width: 30px;
+             height: 2px;
+             background: #0069ff;
+             border-radius: 1px;
+         }
+         
+         .footer-section p {
+             color: #eaf6fb;
+             line-height: 1.6;
+             margin-bottom: 20px;
+             font-size: 0.95rem;
+         }
+         
+         .social-links {
+             display: flex;
+             gap: 12px;
+         }
+         
+         .social-link {
+             display: flex;
+             align-items: center;
+             justify-content: center;
+             width: 40px;
+             height: 40px;
+             background: rgba(255, 255, 255, 0.1);
+             border-radius: 50%;
+             color: #fff;
+             text-decoration: none;
+             transition: all 0.3s ease;
+         }
+         
+         .social-link:hover {
+             background: #0069ff;
+             transform: translateY(-2px);
+         }
+         
+         .footer-links {
+             list-style: none;
+             padding: 0;
+             margin: 0;
+         }
+         
+         .footer-links li {
+             margin-bottom: 12px;
+         }
+         
+         .footer-links a {
+             color: #eaf6fb;
+             text-decoration: none;
+             font-size: 0.95rem;
+             transition: color 0.3s ease;
+             display: inline-block;
+         }
+         
+         .footer-links a:hover {
+             color: #0069ff;
+             transform: translateX(5px);
+         }
+         
+         .footer-bottom {
+             padding: 30px 0;
+         }
+         
+         .footer-bottom-content {
+             display: flex;
+             justify-content: space-between;
+             align-items: center;
+             flex-wrap: wrap;
+             gap: 20px;
+         }
+         
+         .footer-bottom p {
+             color: #eaf6fb;
+             margin: 0;
+             font-size: 0.9rem;
+         }
+         
+         .footer-stats {
+             display: flex;
+             gap: 30px;
+             flex-wrap: wrap;
+         }
+         
+         .footer-stats span {
+             color: #eaf6fb;
+             font-size: 0.9rem;
+             display: flex;
+             align-items: center;
+             gap: 8px;
+         }
+         
+         .footer-stats i {
+             color: #0069ff;
+             font-size: 1rem;
+         }
+         
+         /* API Key Form Styles */
+         .api-key-form {
+             margin-top: 20px;
+         }
+         
+         .api-key-form .form-group {
+             margin-bottom: 20px;
+         }
+         
+         .api-key-form label {
+             display: block;
+             margin-bottom: 8px;
+             font-weight: 600;
+             color: #333;
+         }
+         
+         .api-key-form input {
+             width: 100%;
+             padding: 12px 16px;
+             border: 2px solid #e9ecef;
+             border-radius: 8px;
+             font-size: 0.95rem;
+             transition: border-color 0.3s ease;
+             box-sizing: border-box;
+         }
+         
+         .api-key-form input:focus {
+             outline: none;
+             border-color: #0069ff;
+             box-shadow: 0 0 0 3px rgba(0, 105, 255, 0.1);
+         }
+         
+         .form-actions {
+             display: flex;
+             gap: 12px;
+             flex-wrap: wrap;
+         }
+         
+         .form-actions .btn {
+             flex: 1;
+             min-width: 140px;
+         }
+         
+         .api-key-status {
+             margin-top: 20px;
+             padding: 16px;
+             border-radius: 8px;
+             border: 1px solid;
+         }
+         
+         .api-key-status.success {
+             background: #d4edda;
+             border-color: #c3e6cb;
+             color: #155724;
+         }
+         
+         .api-key-status.error {
+             background: #f8d7da;
+             border-color: #f5c6cb;
+             color: #721c24;
+         }
+         
+         .api-key-status.warning {
+             background: #fff3cd;
+             border-color: #ffeaa7;
+             color: #856404;
+         }
+         
+         .status-message {
+             display: flex;
+             align-items: center;
+             gap: 12px;
+         }
+         
+         .status-icon {
+             font-size: 1.2rem;
+         }
+         
+         .status-icon.success::before {
+             content: '✓';
+             color: #28a745;
+         }
+         
+         .status-icon.error::before {
+             content: '✗';
+             color: #dc3545;
+         }
+         
+         .status-icon.warning::before {
+             content: '⚠';
+             color: #ffc107;
+         }
+         
+         .status-text {
+             font-weight: 500;
+         }
+         
+         @media (max-width: 768px) {
+             .footer-content {
+                 grid-template-columns: 1fr;
+                 gap: 30px;
+                 padding: 40px 0 30px 0;
+             }
+             
+             .footer-bottom-content {
+                 flex-direction: column;
+                 text-align: center;
+             }
+             
+             .footer-stats {
+                 justify-content: center;
+                 gap: 20px;
+             }
+         }
+         
+         @media (max-width: 900px) {
+             .overview-stats {
+                 grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                 gap: 16px;
+             }
+             
+             .costs-container {
+                 grid-template-columns: 1fr;
+             }
+             
+             .section-header {
+                 flex-direction: column;
+                 gap: 16px;
+                 align-items: flex-start;
+             }
+         }
+         
+         @media (max-width: 600px) {
+             .dashboard-main {
+                 padding: 24px 8px;
+             }
+             
+             .overview-stats {
+                 grid-template-columns: 1fr;
+             }
+             
+             .stat-card {
+                 padding: 16px;
+             }
+             
+             .data-table {
+                 font-size: 0.9rem;
+             }
+             
+             .data-table th,
+             .data-table td {
+                 padding: 12px 8px;
+             }
+         }
+    </style>
+</head>
+<body>
+    <!-- <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <span style="display:flex;align-items:center;gap:10px;">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" style="vertical-align:middle;">
+                        <path d="M6 19a7 7 0 0 1 0-14c3.87 0 7 3.13 7 7v1h1a5 5 0 1 1 0 10H7a5 5 0 0 1-1-9.9V12a5 5 0 0 1 5-5c2.76 0 5 2.24 5 5v1" stroke="#0069ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <span>Cost Optimizer</span>
+                </span>
+            </div>
+            <div class="nav-auth" style="margin-left:auto; display:flex; gap:16px;">
+                <a href="/signin.html" class="btn btn-primary" style="min-width:110px; font-weight:600;">Sign In</a>
+                <a href="/signup.html" class="btn btn-secondary" style="min-width:110px; font-weight:600;">Sign Up</a>
+            </div>
+        </div>
+    </nav> -->
+    <div class="dashboard-layout">
+        <aside class="dashboard-sidebar">
+            <div class="user-info">
+                <div class="user-avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="user-name" id="dashboard-user-name">Loading...</div>
+                <div class="user-email" id="dashboard-user-email">Loading...</div>
+                <button id="logout-btn" class="btn btn-outline" style="margin-top: 16px; background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.3);">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </div>
+            <div class="dashboard-tabs">
+                <a href="#overview" class="active"><i class="fas fa-tachometer-alt"></i> Overview</a>
+                <a href="#ec2"><i class="fas fa-server"></i> EC2 Instances</a>
+                <a href="#s3"><i class="fas fa-database"></i> S3 Storage</a>
+                <a href="#rds"><i class="fas fa-database"></i> RDS Databases</a>
+                <a href="#lambda"><i class="fas fa-code"></i> Lambda Functions</a>
+                <a href="#cloudfront"><i class="fas fa-globe"></i> CloudFront</a>
+                <a href="#costs"><i class="fas fa-coins"></i> Costs</a>
+                <a href="#cost-savings"><i class="fas fa-lightbulb"></i> Cost Savings</a>
+                <a href="#profile"><i class="fas fa-user-cog"></i> Profile</a>
+            </div>
+        </aside>
+        <main class="dashboard-main">
+            <!-- Loading State -->
+            <div id="loading-state" class="loading-state">
+                <div class="spinner"></div>
+                <p>Loading AWS data...</p>
+            </div>
+
+            <!-- Error State -->
+            <div id="error-state" class="error-state" style="display: none;">
+                <div class="error-content">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <h3>Failed to Load AWS Data</h3>
+                    <p id="error-message">Unable to fetch AWS data. Please check your credentials.</p>
+                    <button id="retry-btn" class="btn btn-primary">Retry</button>
+                </div>
+            </div>
+
+            <!-- Dashboard Content -->
+            <div id="dashboard-content" class="dashboard-content" style="display: none;">
+                <!-- Overview Section -->
+                <div id="overview" class="dashboard-section active">
+                    <div class="section-header">
+                        <h2>AWS Overview</h2>
+                        <button id="refresh-btn" class="btn btn-primary">
+                            <i class="fas fa-sync-alt"></i> Refresh Data
+                        </button>
+                    </div>
+                    
+                    <div class="overview-stats">
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-server"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3>EC2 Instances</h3>
+                                <p id="ec2-count">Loading...</p>
+                                <small id="ec2-running">Running: Loading...</small>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-database"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3>S3 Buckets</h3>
+                                <p id="s3-count">Loading...</p>
+                                <small>Storage buckets</small>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-database"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3>RDS Instances</h3>
+                                <p id="rds-count">Loading...</p>
+                                <small id="rds-running">Running: Loading...</small>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-code"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3>Lambda Functions</h3>
+                                <p id="lambda-count">Loading...</p>
+                                <small>Serverless functions</small>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-globe"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3>CloudFront</h3>
+                                <p id="cloudfront-count">Loading...</p>
+                                <small id="cloudfront-enabled">Enabled: Loading...</small>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-dollar-sign"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3>Monthly Cost</h3>
+                                <p id="total-cost">Loading...</p>
+                                <small>Last 30 days</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- EC2 Section -->
+                <div id="ec2" class="dashboard-section">
+                    <div class="section-header">
+                        <h2>EC2 Instances</h2>
+                    </div>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Instance ID</th>
+                                    <th>Type</th>
+                                    <th>State</th>
+                                    <th>Public IP</th>
+                                    <th>Private IP</th>
+                                    <th>Launch Time</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ec2-table-body">
+                                <tr>
+                                    <td colspan="6" class="loading-text">Loading EC2 instances...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- S3 Section -->
+                <div id="s3" class="dashboard-section">
+                    <div class="section-header">
+                        <h2>S3 Buckets</h2>
+                    </div>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Bucket Name</th>
+                                    <th>Region</th>
+                                    <th>Creation Date</th>
+                                </tr>
+                            </thead>
+                            <tbody id="s3-table-body">
+                                <tr>
+                                    <td colspan="3" class="loading-text">Loading S3 buckets...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- RDS Section -->
+                <div id="rds" class="dashboard-section">
+                    <div class="section-header">
+                        <h2>RDS Databases</h2>
+                    </div>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Instance ID</th>
+                                    <th>Engine</th>
+                                    <th>Status</th>
+                                    <th>Size</th>
+                                    <th>Storage</th>
+                                    <th>Endpoint</th>
+                                </tr>
+                            </thead>
+                            <tbody id="rds-table-body">
+                                <tr>
+                                    <td colspan="6" class="loading-text">Loading RDS instances...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Lambda Section -->
+                <div id="lambda" class="dashboard-section">
+                    <div class="section-header">
+                        <h2>Lambda Functions</h2>
+                    </div>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Function Name</th>
+                                    <th>Runtime</th>
+                                    <th>Memory</th>
+                                    <th>Timeout</th>
+                                    <th>Last Modified</th>
+                                </tr>
+                            </thead>
+                            <tbody id="lambda-table-body">
+                                <tr>
+                                    <td colspan="5" class="loading-text">Loading Lambda functions...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- CloudFront Section -->
+                <div id="cloudfront" class="dashboard-section">
+                    <div class="section-header">
+                        <h2>CloudFront Distributions</h2>
+                    </div>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Distribution ID</th>
+                                    <th>Domain Name</th>
+                                    <th>Status</th>
+                                    <th>Enabled</th>
+                                    <th>Last Modified</th>
+                                </tr>
+                            </thead>
+                            <tbody id="cloudfront-table-body">
+                                <tr>
+                                    <td colspan="5" class="loading-text">Loading CloudFront distributions...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Costs Section -->
+                <div id="costs" class="dashboard-section">
+                    <div class="section-header">
+                        <h2>Cost Analysis</h2>
+                    </div>
+                    <div class="costs-container">
+                        <div class="cost-chart">
+                            <canvas id="cost-chart"></canvas>
+                        </div>
+                        <div class="cost-breakdown">
+                            <h3>Service Cost Breakdown</h3>
+                            <div id="cost-breakdown-list">
+                                <p class="loading-text">Loading cost data...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cost Savings Section -->
+                <div id="cost-savings" class="dashboard-section">
+                    <div class="section-header">
+                        <h2>Cost Savings Recommendations</h2>
+                        <button id="refresh-savings-btn" class="btn btn-primary">
+                            <i class="fas fa-sync-alt"></i> Refresh Analysis
+                        </button>
+                    </div>
+                    
+                    <div class="savings-overview">
+                        <div class="savings-summary">
+                            <div class="savings-card">
+                                <div class="savings-icon">
+                                    <i class="fas fa-dollar-sign"></i>
+                                </div>
+                                <div class="savings-content">
+                                    <h3>Potential Monthly Savings</h3>
+                                    <p id="potential-savings">$0.00</p>
+                                    <small>Based on current analysis</small>
+                                </div>
+                            </div>
+                            
+                            <div class="savings-card">
+                                <div class="savings-icon">
+                                    <i class="fas fa-percentage"></i>
+                                </div>
+                                <div class="savings-content">
+                                    <h3>Savings Percentage</h3>
+                                    <p id="savings-percentage">0%</p>
+                                    <small>Of current monthly spend</small>
+                                </div>
+                            </div>
+                            
+                            <div class="savings-card">
+                                <div class="savings-icon">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                </div>
+                                <div class="savings-content">
+                                    <h3>High Priority Items</h3>
+                                    <p id="high-priority-count">0</p>
+                                    <small>Require immediate attention</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="recommendations-container">
+                        <!-- Unused Resources -->
+                        <div class="recommendation-section">
+                            <div class="section-header">
+                                <h3><i class="fas fa-trash"></i> Unused Resources</h3>
+                                <span class="priority-badge high">High Priority</span>
+                            </div>
+                            <div class="recommendation-content">
+                                <div id="unused-resources-list">
+                                    <p class="loading-text">Analyzing unused resources...</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Rightsizing Recommendations -->
+                        <div class="recommendation-section">
+                            <div class="section-header">
+                                <h3><i class="fas fa-expand-arrows-alt"></i> Rightsizing Opportunities</h3>
+                                <span class="priority-badge medium">Medium Priority</span>
+                            </div>
+                            <div class="recommendation-content">
+                                <div id="rightsizing-list">
+                                    <p class="loading-text">Analyzing resource utilization...</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Storage Optimizations -->
+                        <div class="recommendation-section">
+                            <div class="section-header">
+                                <h3><i class="fas fa-hdd"></i> Storage Optimizations</h3>
+                                <span class="priority-badge medium">Medium Priority</span>
+                            </div>
+                            <div class="recommendation-content">
+                                <div id="storage-optimizations-list">
+                                    <p class="loading-text">Analyzing storage usage...</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Instance Scheduling -->
+                        <div class="recommendation-section">
+                            <div class="section-header">
+                                <h3><i class="fas fa-clock"></i> Instance Scheduling</h3>
+                                <span class="priority-badge low">Low Priority</span>
+                            </div>
+                            <div class="recommendation-content">
+                                <div id="scheduling-list">
+                                    <p class="loading-text">Analyzing usage patterns...</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Reserved Instances -->
+                        <div class="recommendation-section">
+                            <div class="section-header">
+                                <h3><i class="fas fa-tags"></i> Reserved Instance Opportunities</h3>
+                                <span class="priority-badge medium">Medium Priority</span>
+                            </div>
+                            <div class="recommendation-content">
+                                <div id="reserved-instances-list">
+                                    <p class="loading-text">Analyzing instance usage patterns...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Profile Section -->
+                <div id="profile" class="dashboard-section">
+                    <div class="section-header">
+                        <h2>User Profile</h2>
+                        <button id="test-profile-btn" class="btn btn-secondary">
+                            <i class="fas fa-user-check"></i> Test Profile
+                        </button>
+                    </div>
+                    <div class="profile-card">
+                        <h3>Account Information</h3>
+                        <p><strong>Name:</strong> <span id="profile-name">Loading...</span></p>
+                        <p><strong>Email:</strong> <span id="profile-email">Loading...</span></p>
+                        <p><strong>API Key:</strong> <span id="profile-api-key">••••••••••••••••</span></p>
+                        <p><strong>Member Since:</strong> <span id="profile-created">Loading...</span></p>
+                        <p><strong>Account Status:</strong> <span style="color: #28a745; font-weight: 500;">✓ Active</span></p>
+                    </div>
+                    
+                    <div class="profile-card" style="margin-top: 24px;">
+                        <h3>Update AWS API Key</h3>
+                        <p style="color: #666; margin-bottom: 20px; font-size: 0.9rem;">
+                            Update your AWS API key if you entered incorrect credentials during signup or need to change them.
+                        </p>
+                        
+                        <form id="api-key-form" class="api-key-form">
+                            <div class="form-group">
+                                <label for="new-api-key">New AWS API Key</label>
+                                <input type="text" id="new-api-key" name="apiKey" placeholder="accessKeyId:secretAccessKey:region" required>
+                                <small style="color: #666; font-size: 0.8rem; margin-top: 4px; display: block;">
+                                    Format: accessKeyId:secretAccessKey:region (e.g., AKIA...:abc123...:us-east-1)
+                                </small>
+                            </div>
+                            
+                            <div class="form-actions">
+                                <button type="button" id="test-api-key-btn" class="btn btn-secondary">
+                                    <i class="fas fa-check-circle"></i> Test Credentials
+                                </button>
+                                <button type="submit" id="update-api-key-btn" class="btn btn-primary">
+                                    <i class="fas fa-save"></i> Update API Key
+                                </button>
+                            </div>
+                        </form>
+                        
+                        <div id="api-key-status" class="api-key-status" style="display: none;">
+                            <div class="status-message">
+                                <i class="status-icon"></i>
+                                <span class="status-text"></span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="profile-card" style="margin-top: 24px;">
+                        <h3>Account Features</h3>
+                        <ul style="list-style: none; padding: 0;">
+                            <li style="padding: 8px 0; border-bottom: 1px solid #e9ecef;">
+                                <i class="fas fa-check" style="color: #28a745; margin-right: 8px;"></i>
+                                AWS Cost Monitoring
+                            </li>
+                            <li style="padding: 8px 0; border-bottom: 1px solid #e9ecef;">
+                                <i class="fas fa-check" style="color: #28a745; margin-right: 8px;"></i>
+                                Resource Optimization
+                            </li>
+                            <li style="padding: 8px 0; border-bottom: 1px solid #e9ecef;">
+                                <i class="fas fa-check" style="color: #28a745; margin-right: 8px;"></i>
+                                Cost Analytics
+                            </li>
+                            <li style="padding: 8px 0;">
+                                <i class="fas fa-check" style="color: #28a745; margin-right: 8px;"></i>
+                                Automated Recommendations
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <!-- <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>Cost Optimizer</h4>
+                    <p>Your comprehensive AWS cost management and optimization platform. Monitor, analyze, and optimize your cloud expenses with intelligent recommendations.</p>
+                    <div class="social-links">
+                        <a href="#" class="social-link"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-linkedin"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-github"></i></a>
+                    </div>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Features</h4>
+                    <ul class="footer-links">
+                        <li><a href="#overview">AWS Overview</a></li>
+                        <li><a href="#costs">Cost Analysis</a></li>
+                        <li><a href="#cost-savings">Cost Savings</a></li>
+                        <li><a href="#profile">User Profile</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Support</h4>
+                    <ul class="footer-links">
+                        <li><a href="#">Documentation</a></li>
+                        <li><a href="#">Help Center</a></li>
+                        <li><a href="#">Contact Us</a></li>
+                        <li><a href="#">API Reference</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Company</h4>
+                    <ul class="footer-links">
+                        <li><a href="#">About Us</a></li>
+                        <li><a href="#">Privacy Policy</a></li>
+                        <li><a href="#">Terms of Service</a></li>
+                        <li><a href="#">Security</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <div class="footer-bottom-content">
+                    <p>&copy; 2024 Cost Optimizer. All rights reserved.</p>
+                    <div class="footer-stats">
+                        <span><i class="fas fa-users"></i> 1,000+ Users</span>
+                        <span><i class="fas fa-dollar-sign"></i> $2M+ Saved</span>
+                        <span><i class="fas fa-server"></i> 50K+ Resources</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer> -->
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Dashboard functionality
+        let awsData = null;
+        let costChart = null;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if user is authenticated
+            const token = localStorage.getItem('authToken');
+            const userData = localStorage.getItem('userData');
+            
+            if (!token || !userData) {
+                // Redirect to login if not authenticated
+                window.location.href = '/signin';
+                return;
+            }
+            
+            try {
+                const user = JSON.parse(userData);
+                
+                // Update user information in the dashboard
+                document.getElementById('dashboard-user-name').textContent = user.name;
+                document.getElementById('dashboard-user-email').textContent = user.email;
+                document.getElementById('profile-name').textContent = user.name;
+                document.getElementById('profile-email').textContent = user.email;
+                
+                // Format creation date
+                const createdDate = new Date().toLocaleDateString();
+                document.getElementById('profile-created').textContent = createdDate;
+                
+            } catch (error) {
+                console.error('Error parsing user data:', error);
+                localStorage.removeItem('authToken');
+                localStorage.removeItem('userData');
+                window.location.href = '/signin';
+                return;
+            }
+            
+            // Initialize dashboard
+            initializeDashboard();
+        });
+
+        function initializeDashboard() {
+            // Setup tab navigation
+            setupTabNavigation();
+            
+            // Setup event listeners
+            setupEventListeners();
+            
+            // Test tab functionality
+            testTabFunctionality();
+            
+            // Load AWS data
+            loadAWSData();
+        }
+
+        function testTabFunctionality() {
+            console.log('Testing tab functionality...');
+            
+            // Check if all tabs exist
+            const tabLinks = document.querySelectorAll('.dashboard-tabs a');
+            const sections = document.querySelectorAll('.dashboard-section');
+            
+            console.log('Found tabs:', tabLinks.length);
+            tabLinks.forEach(tab => {
+                console.log('- Tab:', tab.getAttribute('href'), tab.textContent.trim());
+            });
+            
+            console.log('Found sections:', sections.length);
+            sections.forEach(section => {
+                console.log('- Section:', section.id, section.className);
+            });
+            
+            // Test clicking on profile tab
+            setTimeout(() => {
+                const profileTab = document.querySelector('.dashboard-tabs a[href="#profile"]');
+                if (profileTab) {
+                    console.log('Profile tab found, testing click...');
+                    // Don't actually click, just log that it's ready
+                } else {
+                    console.error('Profile tab not found!');
+                }
+            }, 1000);
+        }
+
+        function setupTabNavigation() {
+            const tabLinks = document.querySelectorAll('.dashboard-tabs a');
+            const sections = document.querySelectorAll('.dashboard-section');
+
+            console.log('Setting up tab navigation with', tabLinks.length, 'tabs and', sections.length, 'sections');
+
+            tabLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    console.log('Tab clicked:', this.getAttribute('href'));
+                    
+                    // Remove active class from all tabs and sections
+                    tabLinks.forEach(tab => tab.classList.remove('active'));
+                    sections.forEach(section => section.classList.remove('active'));
+                    
+                    // Add active class to clicked tab
+                    this.classList.add('active');
+                    
+                    // Show corresponding section
+                    const targetId = this.getAttribute('href').substring(1);
+                    const targetSection = document.getElementById(targetId);
+                    if (targetSection) {
+                        targetSection.classList.add('active');
+                        console.log('Showing section:', targetId);
+                    } else {
+                        console.error('Section not found:', targetId);
+                    }
+                });
+            });
+        }
+
+        function setupEventListeners() {
+            // Logout functionality
+            document.getElementById('logout-btn').addEventListener('click', function() {
+                localStorage.removeItem('authToken');
+                localStorage.removeItem('userData');
+                window.location.href = '/signin';
+            });
+
+            // Refresh button
+            document.getElementById('refresh-btn').addEventListener('click', function() {
+                loadAWSData();
+            });
+
+            // Retry button
+            document.getElementById('retry-btn').addEventListener('click', function() {
+                loadAWSData();
+            });
+
+            // Test profile button
+            const testProfileBtn = document.getElementById('test-profile-btn');
+            if (testProfileBtn) {
+                testProfileBtn.addEventListener('click', function() {
+                    console.log('Profile test button clicked');
+                    alert('Profile section is working! User data loaded successfully.');
+                });
+            }
+
+            // Refresh savings button
+            const refreshSavingsBtn = document.getElementById('refresh-savings-btn');
+            if (refreshSavingsBtn) {
+                refreshSavingsBtn.addEventListener('click', function() {
+                    console.log('Refresh savings button clicked');
+                    updateCostSavings();
+                });
+            }
+
+            // API Key form functionality
+            const apiKeyForm = document.getElementById('api-key-form');
+            const testApiKeyBtn = document.getElementById('test-api-key-btn');
+            const updateApiKeyBtn = document.getElementById('update-api-key-btn');
+
+            if (apiKeyForm) {
+                apiKeyForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    updateApiKey();
+                });
+            }
+
+            if (testApiKeyBtn) {
+                testApiKeyBtn.addEventListener('click', function() {
+                    testApiKey();
+                });
+            }
+        }
+
+        async function loadAWSData() {
+            showLoading();
+            
+            try {
+                const response = await fetch('/api/aws/data', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    }
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    awsData = result.data;
+                    hideLoading();
+                    showDashboard();
+                    updateDashboard();
+                } else {
+                    throw new Error(result.message || 'Failed to fetch AWS data');
+                }
+
+            } catch (error) {
+                console.error('Error loading AWS data:', error);
+                hideLoading();
+                showError(error.message);
+            }
+        }
+
+        function showLoading() {
+            document.getElementById('loading-state').style.display = 'flex';
+            document.getElementById('error-state').style.display = 'none';
+            document.getElementById('dashboard-content').style.display = 'none';
+        }
+
+        function hideLoading() {
+            document.getElementById('loading-state').style.display = 'none';
+        }
+
+        function showDashboard() {
+            document.getElementById('dashboard-content').style.display = 'block';
+        }
+
+        function showError(message) {
+            document.getElementById('error-message').textContent = message;
+            document.getElementById('error-state').style.display = 'flex';
+        }
+
+        function updateDashboard() {
+            if (!awsData) return;
+
+            // Update overview stats
+            updateOverviewStats();
+            
+            // Update tables
+            updateEC2Table();
+            updateS3Table();
+            updateRDSTable();
+            updateLambdaTable();
+            updateCloudFrontTable();
+            
+            // Update costs
+            updateCostsSection();
+            
+            // Update cost savings
+            updateCostSavings();
+        }
+
+        function updateOverviewStats() {
+            document.getElementById('ec2-count').textContent = awsData.ec2.count;
+            document.getElementById('ec2-running').textContent = `Running: ${awsData.ec2.running}`;
+            
+            document.getElementById('s3-count').textContent = awsData.s3.count;
+            
+            document.getElementById('rds-count').textContent = awsData.rds.count;
+            document.getElementById('rds-running').textContent = `Running: ${awsData.rds.running}`;
+            
+            document.getElementById('lambda-count').textContent = awsData.lambda.count;
+            
+            document.getElementById('cloudfront-count').textContent = awsData.cloudfront.count;
+            document.getElementById('cloudfront-enabled').textContent = `Enabled: ${awsData.cloudfront.enabled}`;
+            
+            document.getElementById('total-cost').textContent = `$${awsData.summary.totalCost.toFixed(2)}`;
+        }
+
+        function updateEC2Table() {
+            const tbody = document.getElementById('ec2-table-body');
+            tbody.innerHTML = '';
+
+            if (awsData.ec2.instances.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="loading-text">No EC2 instances found</td></tr>';
+                return;
+            }
+
+            awsData.ec2.instances.forEach(instance => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${instance.id}</td>
+                    <td>${instance.type}</td>
+                    <td><span class="status-badge status-${instance.state}">${instance.state}</span></td>
+                    <td>${instance.publicIp}</td>
+                    <td>${instance.privateIp}</td>
+                    <td>${new Date(instance.launchTime).toLocaleDateString()}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function updateS3Table() {
+            const tbody = document.getElementById('s3-table-body');
+            tbody.innerHTML = '';
+
+            if (awsData.s3.buckets.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="3" class="loading-text">No S3 buckets found</td></tr>';
+                return;
+            }
+
+            awsData.s3.buckets.forEach(bucket => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${bucket.name}</td>
+                    <td>${bucket.region}</td>
+                    <td>${new Date(bucket.creationDate).toLocaleDateString()}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function updateRDSTable() {
+            const tbody = document.getElementById('rds-table-body');
+            tbody.innerHTML = '';
+
+            if (awsData.rds.instances.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="loading-text">No RDS instances found</td></tr>';
+                return;
+            }
+
+            awsData.rds.instances.forEach(instance => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${instance.id}</td>
+                    <td>${instance.engine}</td>
+                    <td><span class="status-badge status-${instance.status}">${instance.status}</span></td>
+                    <td>${instance.size}</td>
+                    <td>${instance.storage} GB</td>
+                    <td>${instance.endpoint}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function updateLambdaTable() {
+            const tbody = document.getElementById('lambda-table-body');
+            tbody.innerHTML = '';
+
+            if (awsData.lambda.functions.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="loading-text">No Lambda functions found</td></tr>';
+                return;
+            }
+
+            awsData.lambda.functions.forEach(func => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${func.name}</td>
+                    <td>${func.runtime}</td>
+                    <td>${func.memorySize} MB</td>
+                    <td>${func.timeout}s</td>
+                    <td>${new Date(func.lastModified).toLocaleDateString()}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function updateCloudFrontTable() {
+            const tbody = document.getElementById('cloudfront-table-body');
+            tbody.innerHTML = '';
+
+            if (awsData.cloudfront.distributions.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="loading-text">No CloudFront distributions found</td></tr>';
+                return;
+            }
+
+            awsData.cloudfront.distributions.forEach(dist => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${dist.id}</td>
+                    <td>${dist.domainName}</td>
+                    <td><span class="status-badge status-${dist.status}">${dist.status}</span></td>
+                    <td><span class="status-badge status-${dist.enabled ? 'enabled' : 'disabled'}">${dist.enabled ? 'Yes' : 'No'}</span></td>
+                    <td>${new Date(dist.lastModifiedTime).toLocaleDateString()}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function updateCostsSection() {
+            updateCostChart();
+            updateCostBreakdown();
+        }
+
+        function updateCostChart() {
+            const ctx = document.getElementById('cost-chart');
+            if (!ctx) return;
+
+            // Destroy existing chart
+            if (costChart) {
+                costChart.destroy();
+            }
+
+            const costData = awsData.costs;
+            const labels = Object.keys(costData);
+            const data = Object.values(costData);
+
+            costChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: [
+                            '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0',
+                            '#9966FF', '#FF9F40', '#FF6384', '#C9CBCF'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateCostBreakdown() {
+            const container = document.getElementById('cost-breakdown-list');
+            container.innerHTML = '';
+
+            const costData = awsData.costs;
+            const sortedCosts = Object.entries(costData)
+                .sort(([,a], [,b]) => b - a);
+
+            sortedCosts.forEach(([service, cost]) => {
+                const item = document.createElement('div');
+                item.className = 'cost-item';
+                item.innerHTML = `
+                    <span>${service}</span>
+                    <span>$${cost.toFixed(2)}</span>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        function updateCostSavings() {
+            if (!awsData) return;
+
+            // Calculate potential savings
+            const recommendations = analyzeCostSavings(awsData);
+            
+            // Update summary cards
+            updateSavingsSummary(recommendations);
+            
+            // Update recommendation sections
+            updateUnusedResources(recommendations.unusedResources);
+            updateRightsizingRecommendations(recommendations.rightsizing);
+            updateStorageOptimizations(recommendations.storage);
+            updateInstanceScheduling(recommendations.scheduling);
+            updateReservedInstances(recommendations.reservedInstances);
+        }
+
+        function analyzeCostSavings(awsData) {
+            const recommendations = {
+                unusedResources: [],
+                rightsizing: [],
+                storage: [],
+                scheduling: [],
+                reservedInstances: [],
+                totalSavings: 0,
+                highPriorityCount: 0
+            };
+
+            // Analyze EC2 instances for unused resources
+            awsData.ec2.instances.forEach(instance => {
+                if (instance.state === 'stopped') {
+                    const estimatedCost = estimateEC2Cost(instance.type);
+                    recommendations.unusedResources.push({
+                        type: 'EC2 Instance',
+                        name: instance.id,
+                        description: `Stopped instance ${instance.type} - consider terminating if not needed`,
+                        savings: estimatedCost,
+                        action: 'Terminate Instance',
+                        priority: 'high'
+                    });
+                    recommendations.totalSavings += estimatedCost;
+                    recommendations.highPriorityCount++;
+                }
+            });
+
+            // Analyze RDS instances for unused resources
+            awsData.rds.instances.forEach(instance => {
+                if (instance.status === 'stopped') {
+                    const estimatedCost = estimateRDSCost(instance.size);
+                    recommendations.unusedResources.push({
+                        type: 'RDS Instance',
+                        name: instance.id,
+                        description: `Stopped RDS instance ${instance.engine} ${instance.size}`,
+                        savings: estimatedCost,
+                        action: 'Delete Instance',
+                        priority: 'high'
+                    });
+                    recommendations.totalSavings += estimatedCost;
+                    recommendations.highPriorityCount++;
+                }
+            });
+
+            // Rightsizing recommendations (simplified analysis)
+            awsData.ec2.instances.forEach(instance => {
+                if (instance.state === 'running') {
+                    const currentCost = estimateEC2Cost(instance.type);
+                    const smallerType = getSmallerInstanceType(instance.type);
+                    if (smallerType) {
+                        const smallerCost = estimateEC2Cost(smallerType);
+                        const savings = currentCost - smallerCost;
+                        if (savings > 10) { // Only recommend if savings > $10/month
+                            recommendations.rightsizing.push({
+                                type: 'EC2 Instance',
+                                name: instance.id,
+                                description: `Consider downsizing from ${instance.type} to ${smallerType}`,
+                                savings: savings,
+                                action: 'Resize Instance',
+                                priority: 'medium'
+                            });
+                            recommendations.totalSavings += savings;
+                        }
+                    }
+                }
+            });
+
+            // Storage optimizations
+            if (awsData.s3.buckets.length > 0) {
+                recommendations.storage.push({
+                    type: 'S3 Storage',
+                    name: 'S3 Lifecycle Policies',
+                    description: 'Implement lifecycle policies to move infrequently accessed data to cheaper storage tiers',
+                    savings: 50, // Estimated savings
+                    action: 'Configure Lifecycle',
+                    priority: 'medium'
+                });
+                recommendations.totalSavings += 50;
+            }
+
+            // Instance scheduling recommendations
+            const runningInstances = awsData.ec2.instances.filter(i => i.state === 'running');
+            if (runningInstances.length > 0) {
+                recommendations.scheduling.push({
+                    type: 'EC2 Scheduling',
+                    name: 'Auto Scaling',
+                    description: 'Implement auto-scaling to automatically start/stop instances based on demand',
+                    savings: 30, // Estimated savings
+                    action: 'Setup Auto Scaling',
+                    priority: 'low'
+                });
+                recommendations.totalSavings += 30;
+            }
+
+            // Reserved instance opportunities
+            if (runningInstances.length >= 2) {
+                recommendations.reservedInstances.push({
+                    type: 'Reserved Instances',
+                    name: 'RI Purchase',
+                    description: 'Purchase reserved instances for consistent workloads to save up to 60%',
+                    savings: 100, // Estimated savings
+                    action: 'Purchase RI',
+                    priority: 'medium'
+                });
+                recommendations.totalSavings += 100;
+            }
+
+            return recommendations;
+        }
+
+        function estimateEC2Cost(instanceType) {
+            // Simplified cost estimation (in real app, use AWS pricing API)
+            const costMap = {
+                't2.micro': 8.5,
+                't2.small': 17,
+                't2.medium': 34,
+                't3.micro': 8.5,
+                't3.small': 17,
+                't3.medium': 34,
+                'm5.large': 86,
+                'm5.xlarge': 172,
+                'c5.large': 68,
+                'c5.xlarge': 136
+            };
+            return costMap[instanceType] || 50; // Default estimate
+        }
+
+        function estimateRDSCost(instanceClass) {
+            // Simplified RDS cost estimation
+            const costMap = {
+                'db.t3.micro': 12,
+                'db.t3.small': 24,
+                'db.t3.medium': 48,
+                'db.m5.large': 115,
+                'db.m5.xlarge': 230
+            };
+            return costMap[instanceClass] || 60; // Default estimate
+        }
+
+        function getSmallerInstanceType(currentType) {
+            // Simplified instance type mapping
+            const smallerTypes = {
+                't3.medium': 't3.small',
+                't3.small': 't3.micro',
+                'm5.xlarge': 'm5.large',
+                'c5.xlarge': 'c5.large'
+            };
+            return smallerTypes[currentType];
+        }
+
+        function updateSavingsSummary(recommendations) {
+            document.getElementById('potential-savings').textContent = `$${recommendations.totalSavings.toFixed(2)}`;
+            document.getElementById('high-priority-count').textContent = recommendations.highPriorityCount;
+            
+            // Calculate savings percentage
+            const currentCost = awsData.summary.totalCost;
+            const savingsPercentage = currentCost > 0 ? (recommendations.totalSavings / currentCost * 100) : 0;
+            document.getElementById('savings-percentage').textContent = `${savingsPercentage.toFixed(1)}%`;
+        }
+
+        function updateUnusedResources(resources) {
+            const container = document.getElementById('unused-resources-list');
+            container.innerHTML = '';
+
+            if (resources.length === 0) {
+                container.innerHTML = '<p class="no-recommendations">No unused resources found. Great job!</p>';
+                return;
+            }
+
+            resources.forEach(resource => {
+                const item = document.createElement('div');
+                item.className = 'recommendation-item';
+                item.innerHTML = `
+                    <div class="recommendation-info">
+                        <div class="recommendation-title">${resource.name}</div>
+                        <div class="recommendation-description">${resource.description}</div>
+                        <button class="action-button">${resource.action}</button>
+                    </div>
+                    <div class="recommendation-savings">
+                        <div class="savings-amount">$${resource.savings.toFixed(2)}</div>
+                        <div class="savings-period">per month</div>
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        function updateRightsizingRecommendations(recommendations) {
+            const container = document.getElementById('rightsizing-list');
+            container.innerHTML = '';
+
+            if (recommendations.length === 0) {
+                container.innerHTML = '<p class="no-recommendations">No rightsizing opportunities found.</p>';
+                return;
+            }
+
+            recommendations.forEach(rec => {
+                const item = document.createElement('div');
+                item.className = 'recommendation-item';
+                item.innerHTML = `
+                    <div class="recommendation-info">
+                        <div class="recommendation-title">${rec.name}</div>
+                        <div class="recommendation-description">${rec.description}</div>
+                        <button class="action-button">${rec.action}</button>
+                    </div>
+                    <div class="recommendation-savings">
+                        <div class="savings-amount">$${rec.savings.toFixed(2)}</div>
+                        <div class="savings-period">per month</div>
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        function updateStorageOptimizations(recommendations) {
+            const container = document.getElementById('storage-optimizations-list');
+            container.innerHTML = '';
+
+            if (recommendations.length === 0) {
+                container.innerHTML = '<p class="no-recommendations">No storage optimizations needed.</p>';
+                return;
+            }
+
+            recommendations.forEach(rec => {
+                const item = document.createElement('div');
+                item.className = 'recommendation-item';
+                item.innerHTML = `
+                    <div class="recommendation-info">
+                        <div class="recommendation-title">${rec.name}</div>
+                        <div class="recommendation-description">${rec.description}</div>
+                        <button class="action-button">${rec.action}</button>
+                    </div>
+                    <div class="recommendation-savings">
+                        <div class="savings-amount">$${rec.savings.toFixed(2)}</div>
+                        <div class="savings-period">per month</div>
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        function updateInstanceScheduling(recommendations) {
+            const container = document.getElementById('scheduling-list');
+            container.innerHTML = '';
+
+            if (recommendations.length === 0) {
+                container.innerHTML = '<p class="no-recommendations">No scheduling optimizations needed.</p>';
+                return;
+            }
+
+            recommendations.forEach(rec => {
+                const item = document.createElement('div');
+                item.className = 'recommendation-item';
+                item.innerHTML = `
+                    <div class="recommendation-info">
+                        <div class="recommendation-title">${rec.name}</div>
+                        <div class="recommendation-description">${rec.description}</div>
+                        <button class="action-button">${rec.action}</button>
+                    </div>
+                    <div class="recommendation-savings">
+                        <div class="savings-amount">$${rec.savings.toFixed(2)}</div>
+                        <div class="savings-period">per month</div>
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        function updateReservedInstances(recommendations) {
+            const container = document.getElementById('reserved-instances-list');
+            container.innerHTML = '';
+
+            if (recommendations.length === 0) {
+                container.innerHTML = '<p class="no-recommendations">No reserved instance opportunities found.</p>';
+                return;
+            }
+
+            recommendations.forEach(rec => {
+                const item = document.createElement('div');
+                item.className = 'recommendation-item';
+                item.innerHTML = `
+                    <div class="recommendation-info">
+                        <div class="recommendation-title">${rec.name}</div>
+                        <div class="recommendation-description">${rec.description}</div>
+                        <button class="action-button">${rec.action}</button>
+                    </div>
+                    <div class="recommendation-savings">
+                        <div class="savings-amount">$${rec.savings.toFixed(2)}</div>
+                        <div class="savings-period">per month</div>
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        async function testApiKey() {
+            const apiKeyInput = document.getElementById('new-api-key');
+            const apiKey = apiKeyInput.value.trim();
+            const statusDiv = document.getElementById('api-key-status');
+            const testBtn = document.getElementById('test-api-key-btn');
+            const updateBtn = document.getElementById('update-api-key-btn');
+
+            if (!apiKey) {
+                showApiKeyStatus('Please enter an API key to test', 'error');
+                return;
+            }
+
+            // Validate API key format
+            const apiKeyParts = apiKey.split(':');
+            if (apiKeyParts.length < 2) {
+                showApiKeyStatus('Invalid API key format. Expected: accessKeyId:secretAccessKey:region', 'error');
+                return;
+            }
+
+            // Show loading state
+            testBtn.disabled = true;
+            testBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Testing...';
+            updateBtn.disabled = true;
+
+            try {
+                const response = await fetch('/api/aws/test-credentials', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    },
+                    body: JSON.stringify({ apiKey })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showApiKeyStatus('AWS credentials are valid! You can now update your API key.', 'success');
+                    updateBtn.disabled = false;
+                } else {
+                    showApiKeyStatus(result.message || 'Failed to test credentials', 'error');
+                }
+
+            } catch (error) {
+                console.error('Error testing API key:', error);
+                showApiKeyStatus('Failed to test credentials. Please try again.', 'error');
+            } finally {
+                testBtn.disabled = false;
+                testBtn.innerHTML = '<i class="fas fa-check-circle"></i> Test Credentials';
+            }
+        }
+
+        async function updateApiKey() {
+            const apiKeyInput = document.getElementById('new-api-key');
+            const apiKey = apiKeyInput.value.trim();
+            const updateBtn = document.getElementById('update-api-key-btn');
+
+            if (!apiKey) {
+                showApiKeyStatus('Please enter an API key', 'error');
+                return;
+            }
+
+            // Validate API key format
+            const apiKeyParts = apiKey.split(':');
+            if (apiKeyParts.length < 2) {
+                showApiKeyStatus('Invalid API key format. Expected: accessKeyId:secretAccessKey:region', 'error');
+                return;
+            }
+
+            // Show loading state
+            updateBtn.disabled = true;
+            updateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Updating...';
+
+            try {
+                const response = await fetch('/api/auth/update-api-key', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    },
+                    body: JSON.stringify({ apiKey })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showApiKeyStatus('API key updated successfully! Your new credentials are now active.', 'success');
+                    apiKeyInput.value = '';
+                    
+                    // Update the displayed API key in profile
+                    const profileApiKey = document.getElementById('profile-api-key');
+                    if (profileApiKey) {
+                        profileApiKey.textContent = '•••••••••••••••• (Updated)';
+                    }
+                    
+                    // Refresh AWS data with new credentials
+                    setTimeout(() => {
+                        loadAWSData();
+                    }, 1000);
+                    
+                } else {
+                    showApiKeyStatus(result.message || 'Failed to update API key', 'error');
+                }
+
+            } catch (error) {
+                console.error('Error updating API key:', error);
+                showApiKeyStatus('Failed to update API key. Please try again.', 'error');
+            } finally {
+                updateBtn.disabled = false;
+                updateBtn.innerHTML = '<i class="fas fa-save"></i> Update API Key';
+            }
+        }
+
+        function showApiKeyStatus(message, type) {
+            const statusDiv = document.getElementById('api-key-status');
+            const statusIcon = statusDiv.querySelector('.status-icon');
+            const statusText = statusDiv.querySelector('.status-text');
+
+            statusDiv.className = `api-key-status ${type}`;
+            statusIcon.className = `status-icon ${type}`;
+            statusText.textContent = message;
+            statusDiv.style.display = 'block';
+
+            // Auto-hide success messages after 5 seconds
+            if (type === 'success') {
+                setTimeout(() => {
+                    statusDiv.style.display = 'none';
+                }, 5000);
+            }
+        }
+    </script>
+</body>
+</html>
