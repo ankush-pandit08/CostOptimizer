@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const mongoUri = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/costoptimizer';
+const mongoUri = process.env.MONGODB_URI || 'mongodb://0.0.0.0:27017/costoptimizer';
 
 mongoose
     .connect(mongoUri, {
