@@ -13,7 +13,8 @@ app.use(express.json());
 app.use(express.static('public'));
 
 // Database connection
-require('./config/db');
+const { connectDB } = require('./config/db');
+connectDB();
 
 // Routes
 app.use('/api/auth', require('./routes/authRoutes'));
