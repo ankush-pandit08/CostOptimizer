@@ -132,8 +132,8 @@ class AWSService {
     async getCostData() {
         try {
             const endDate = new Date();
-            const startDate = new Date();
-            startDate.setDate(startDate.getDate() - 30);
+            const startDate = new Date(endDate.getFullYear(), endDate.getMonth(), 1);
+            //startDate.setDate(startDate.getDate() - 30);
 
             const params = {
                 TimePeriod: {
