@@ -26,6 +26,19 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'home.html'));
 });
 
+
+app.get('/docs', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'documentation.html'));
+});
+
+app.get('/guides', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'documentation.html'));
+});
+
+app.get('/about', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'documentation.html'));
+});
+
 // Serve app
 app.get('/signin', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'signin.html'));
