@@ -50,6 +50,13 @@ body {
     align-items: center;
 }
 
+.logo{
+display:flex;
+justify-content: center;
+align-items:center;
+
+}
+
 .nav-logo {
     display: flex;
     align-items: center;
